@@ -1,0 +1,61 @@
+db.getCollection('product').aggregate([
+{
+    
+    $group:{
+        _id: "$brand",
+        max: {$max:"$price"},
+        min: {$min:"$price"},
+        names :{
+            $push:{
+                Name:'$name',
+                Price:'$price'
+                }
+            
+        }
+    },
+    
+},
+{
+    $project:{
+        max:1,
+        min:1,
+        max_names: {
+            $setDifference:[
+                {
+                    $map:{
+                        input: '$names',
+                        as: 'name',
+                        in: {
+                            $cond:[
+                                { $eq:['$$name.Price','$max']},
+                                '$$name.Name',false
+                            ]
+                        }  
+                    }
+                }
+              ,[false]]
+            
+            
+       },
+       min_names:{
+              $setDifference:[
+                {
+                    $map:{
+                        input: '$names',
+                        as: 'name',
+                        in: {
+                            $cond:[
+                                { $eq:['$$name.Price','$min']},
+                                '$$name.Name',false
+                            ]
+                        }  
+                    }
+                }
+              ,[false]]
+             
+       }
+    }
+}
+
+
+])
